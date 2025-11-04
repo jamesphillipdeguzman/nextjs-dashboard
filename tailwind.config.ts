@@ -18,6 +18,11 @@ const config: Config = {
           600: '#2F6FEB',
         },
       },
+      // Added custom border widths to see the triangle in page.tsx
+      borderWidth: {
+        15: '15px',
+        26: '26px',
+      },
     },
     keyframes: {
       shimmer: {
