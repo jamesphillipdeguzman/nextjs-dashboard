@@ -31,6 +31,7 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
+  // Fetch the last 5 invoices, sorted by date
   try {
     const data = await sql<LatestInvoiceRaw[]>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
@@ -43,6 +44,8 @@ export async function fetchLatestInvoices() {
       ...invoice,
       amount: formatCurrency(invoice.amount),
     }));
+    console.log('Latest Invoices:', latestInvoices);
+
     return latestInvoices;
   } catch (error) {
     console.error('Database Error:', error);
