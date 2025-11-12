@@ -20,6 +20,9 @@ async function getUser(email: string): Promise<User | undefined> {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
+    session: {
+        strategy: 'jwt',
+    },
     providers: [
         Credentials({
             async authorize(credentials) {
@@ -50,36 +53,28 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         }),
     ],
     callbacks: {
+        ...authConfig.callbacks,
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
                 token.name = user.name;
                 token.email = user.email;
             }
-            // Ensure token.id is always set
-            if (!token.id) {
-                console.warn('Token missing id');
-            }
             return token;
         },
         async session({ session, token }) {
-            try {
-                if (token && session?.user) {
-                    if (token.id) {
-                        session.user.id = token.id;
-                    }
-                    if (token.name) {
-                        session.user.name = token.name;
-                    }
-                    if (token.email) {
-                        session.user.email = token.email;
-                    }
+            if (token && session?.user) {
+                if (token.id) {
+                    session.user.id = token.id;
                 }
-                return session;
-            } catch (error) {
-                console.error('Session callback error:', error);
-                return session;
+                if (token.name) {
+                    session.user.name = token.name;
+                }
+                if (token.email) {
+                    session.user.email = token.email;
+                }
             }
+            return session;
         },
     },
 });
