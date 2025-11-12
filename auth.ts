@@ -23,21 +23,29 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     providers: [
         Credentials({
             async authorize(credentials) {
-                const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
-                    .safeParse(credentials);
+                try {
+                    const parsedCredentials = z
+                        .object({ email: z.string().email(), password: z.string().min(6) })
+                        .safeParse(credentials);
 
-                if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
-                    const user = await getUser(email);
-                    if (!user) return null;
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
-
+                    if (parsedCredentials.success) {
+                        const { email, password } = parsedCredentials.data;
+                        const user = await getUser(email);
+                        if (!user) return null;
+                        const passwordsMatch = await bcrypt.compare(password, user.password);
+                        if (passwordsMatch) {
+                            return {
+                                id: user.id,
+                                name: user.name,
+                                email: user.email,
+                            };
+                        }
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('Authorization error:', error);
+                    return null;
                 }
-
-
-                return null;
             },
         }),
     ],
@@ -48,15 +56,30 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 token.name = user.name;
                 token.email = user.email;
             }
+            // Ensure token.id is always set
+            if (!token.id) {
+                console.warn('Token missing id');
+            }
             return token;
         },
         async session({ session, token }) {
-            if (token && session.user) {
-                session.user.id = token.id as string;
-                if (token.name) session.user.name = token.name as string;
-                if (token.email) session.user.email = token.email as string;
+            try {
+                if (token && session?.user) {
+                    if (token.id) {
+                        session.user.id = token.id;
+                    }
+                    if (token.name) {
+                        session.user.name = token.name;
+                    }
+                    if (token.email) {
+                        session.user.email = token.email;
+                    }
+                }
+                return session;
+            } catch (error) {
+                console.error('Session callback error:', error);
+                return session;
             }
-            return session;
         },
     },
 });
