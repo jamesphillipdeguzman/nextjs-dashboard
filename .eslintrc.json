@@ -1,10 +1,36 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "root": true,
+  "extends": [
+    "next/core-web-vitals",       // Next.js recommended rules + Core Web Vitals
+    "eslint:recommended",         // Base ESLint recommended rules
+    "plugin:@typescript-eslint/recommended", // TypeScript rules
+    "plugin:import/recommended",  // Import rules
+    "plugin:import/typescript"    // Import rules for TS
+  ],
+  "plugins": ["@typescript-eslint", "import"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "rules": {
+    "semi": ["error", "always"],
+    "quotes": ["error", "single"],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "import/order": ["warn", { "alphabetize": { "order": "asc", "caseInsensitive": true } }]
+  },
   "settings": {
     "import/resolver": {
       "node": {
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
+      },
+      "typescript": {} // This ensures ESLint resolves TS paths using tsconfig paths
     }
   }
 }
